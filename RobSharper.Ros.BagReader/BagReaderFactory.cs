@@ -1,5 +1,7 @@
 using System;
 using System.IO;
+using System.Text;
+using RobSharper.Ros.MessageEssentials.Serialization;
 
 namespace RobSharper.Ros.BagReader
 {
@@ -23,10 +25,10 @@ namespace RobSharper.Ros.BagReader
         {
             if (bag == null) throw new ArgumentNullException(nameof(bag));
             
-            var reader = new StreamReader(bag);
-            var line = reader.ReadLine()?.Trim();
+            var versionHeader = bag.ReadBytes(13);
+            var versionText = Encoding.ASCII.GetString(versionHeader);
 
-            return new RosBagVersion(line);
+            return new RosBagVersion(versionText);
         }
     }
 }

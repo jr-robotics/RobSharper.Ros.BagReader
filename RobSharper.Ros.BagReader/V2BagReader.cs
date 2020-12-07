@@ -11,6 +11,8 @@ namespace RobSharper.Ros.BagReader
     {    
         private RosBinaryReader _reader;
         
+        public BagHeader Header { get; }
+        
         public V2BagReader(Stream bag, bool skipVersionHeader = false)
         {
             if (!skipVersionHeader)
@@ -23,17 +25,25 @@ namespace RobSharper.Ros.BagReader
 
             _reader = new RosBinaryReader(bag);
 
-            ReadHeaderRecord();
+            Header = ReadBagHeader();
         }
 
-        private BagHeader ReadHeaderRecord()
+        private BagHeader ReadBagHeader()
+        {
+            var recordInfo = ReadRecordInfo();
+            _reader.SkipBytes(recordInfo.DataLength);
+
+            var bagHeader = new BagHeader(recordInfo.Header);
+            return bagHeader;
+        }
+
+        private RecordInfo ReadRecordInfo()
         {
             var header = ReadRecordHeader();
-             
-            var data = (byte[])null; // TODO
+            var dataLength = _reader.ReadInt32();
+            var dataStart = _reader.BaseStream.Position;
 
-            var bagHeader = new BagHeader(header);
-            return bagHeader;
+            return new RecordInfo(header, dataLength, dataStart);
         }
 
         private RecordHeader ReadRecordHeader()

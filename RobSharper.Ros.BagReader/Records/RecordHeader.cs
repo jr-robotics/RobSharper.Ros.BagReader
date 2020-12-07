@@ -16,7 +16,7 @@ namespace RobSharper.Ros.BagReader.Records
             {
                 if (_opCode == 0)
                 {
-                    _opCode = GetInt32Field("op");
+                    _opCode = (int)GetByteField("op");
                 }
 
                 return _opCode;
@@ -26,8 +26,6 @@ namespace RobSharper.Ros.BagReader.Records
         public RecordHeader(Dictionary<string,byte[]> recordFields)
         {
             _recordFields = recordFields ?? throw new ArgumentNullException(nameof(recordFields));
-            
-            throw new NotImplementedException();
         }
 
         public RosBinaryReader GetFieldReader(string id)
@@ -35,6 +33,14 @@ namespace RobSharper.Ros.BagReader.Records
             var value = _recordFields[id];
             var reader = new RosBinaryReader(new MemoryStream(value));
             return reader;
+        }
+
+        public byte GetByteField(string id)
+        {
+            using (var r = GetFieldReader(id))
+            {
+                return r.ReadByte();
+            }
         }
 
         public int GetInt32Field(string id)

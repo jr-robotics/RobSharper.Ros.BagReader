@@ -26,7 +26,7 @@ namespace RobSharper.Ros.BagReader.Records
             
             _connectionCount = new Lazy<int>(() => h["conn_count"].ConvertToInt32());
             _chunkCount = new Lazy<int>(() => h["chunk_count"].ConvertToInt32());
-            _indexPos = new Lazy<long>(() => h["chunk_count"].ConvertToInt64());
+            _indexPos = new Lazy<long>(() => h["index_pos"].ConvertToInt64());
         }
 
         public void Accept(IBagRecordVisitor visitor)

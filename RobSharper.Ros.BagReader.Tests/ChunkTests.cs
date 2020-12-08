@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using FluentAssertions;
 using Moq;
 using RobSharper.Ros.BagReader.Records;
 using Xunit;
@@ -29,6 +30,29 @@ namespace RobSharper.Ros.BagReader.Tests
             reader.ProcessAll();
             
             visitorMock.Verify(x => x.Visit(It.IsAny<Chunk>()), Times.Once);
+        }
+        
+        private void VisitorCallbackTest(Action<Chunk> action)
+        {
+            var visitorMock = new Mock<IBagRecordVisitor>();
+            visitorMock.Setup(x => x.Visit(It.IsAny<Chunk>()))
+                .Callback<Chunk>(action);
+            
+            var reader = BagReaderFactory.Create(_bagStream, visitorMock.Object);
+            
+            reader.ProcessAll();
+        }
+
+        [Fact]
+        public void Can_read_Compression()
+        {
+            VisitorCallbackTest(chunk => chunk.Compression.Should().BeOneOf("none", "bz2"));
+        }
+
+        [Fact]
+        public void Can_read_UncompressedSize()
+        {
+            VisitorCallbackTest(chunk => chunk.UncompressedSize.Should().BeGreaterThan(0));
         }
 
         [Fact]

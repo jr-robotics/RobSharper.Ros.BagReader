@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using FluentAssertions;
 using Moq;
 using RobSharper.Ros.BagReader.Records;
 using Xunit;
@@ -30,20 +31,68 @@ namespace RobSharper.Ros.BagReader.Tests
             
             visitorMock.Verify(x => x.Visit(It.IsAny<Connection>()), Times.AtLeastOnce);
         }
-
-        [Fact]
-        public void Can_read_connection_data()
+        
+        private void VisitorCallbackTest(Action<Connection> action)
         {
             var visitorMock = new Mock<IBagRecordVisitor>();
             visitorMock.Setup(x => x.Visit(It.IsAny<Connection>()))
-                .Callback<Connection>(con =>
-                {
-                    var md5 = con.MD5Sum;
-                });
+                .Callback<Connection>(action);
             
             var reader = BagReaderFactory.Create(_bagStream, visitorMock.Object);
             
             reader.ProcessAll();
-        } 
+        }
+
+        [Fact]
+        public void Can_read_MD5Sum()
+        {
+            VisitorCallbackTest(connection => connection.MD5Sum.Should().NotBeNullOrEmpty());
+        }
+
+        [Fact]
+        public void Can_read_ConnectionId()
+        {
+            VisitorCallbackTest(connection => connection.ConnectionId.Should().BeInRange(int.MinValue, int.MaxValue));
+        }
+
+        [Fact]
+        public void Can_read_HeaderTopic()
+        {
+            VisitorCallbackTest(connection => connection.HeaderTopic.Should().NotBeNullOrEmpty());
+        }
+
+        [Fact]
+        public void Can_read_DataTopic()
+        {
+            VisitorCallbackTest(connection => connection.DataTopic.Should().NotBeNullOrEmpty());
+        }
+
+        [Fact]
+        public void Can_read_Type()
+        {
+            VisitorCallbackTest(connection => connection.Type.Should().NotBeNullOrEmpty());
+        }
+
+        [Fact]
+        public void Can_read_MessageDefinition()
+        {
+            VisitorCallbackTest(connection => connection.MessageDefinition.Should().NotBeNullOrEmpty());
+        }
+
+        [Fact]
+        public void Can_read_CallerId()
+        {
+            VisitorCallbackTest(connection =>
+            {
+                var optionalCallerId = connection.CallerId;
+                Assert.True(optionalCallerId == null || optionalCallerId != string.Empty);
+            });
+        }
+
+        [Fact]
+        public void Can_read_Latching()
+        {
+            VisitorCallbackTest(connection => Assert.True(connection.Latching == true || connection.Latching == false));
+        }
     }
 }

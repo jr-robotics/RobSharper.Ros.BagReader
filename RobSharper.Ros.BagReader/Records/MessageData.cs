@@ -22,7 +22,7 @@ namespace RobSharper.Ros.BagReader.Records
             var h = header;
             Data = data ?? throw new ArgumentNullException(nameof(data));
             
-            _connectionId = new Lazy<int>(() => h["con"].ConvertToInt32());
+            _connectionId = new Lazy<int>(() => h["conn"].ConvertToInt32());
             _time = new Lazy<DateTime>(() => h["time"].ConvertToDateTime());
         }
 

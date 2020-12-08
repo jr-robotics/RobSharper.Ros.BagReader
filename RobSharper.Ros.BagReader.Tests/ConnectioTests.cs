@@ -44,6 +44,6 @@ namespace RobSharper.Ros.BagReader.Tests
             var reader = BagReaderFactory.Create(_bagStream, visitorMock.Object);
             
             reader.ProcessAll();
-        }
+        } 
     }
 }

@@ -57,8 +57,8 @@ namespace RobSharper.Ros.BagReader.Records
 
         public DateTime ConvertToDateTime()
         {
-            var secs = BitConverter.ToInt32(_reversedData.Value, 4);
-            var nsecs = BitConverter.ToInt32(_reversedData.Value, 0);
+            var secs = BitConverter.ToInt32(_reversedData.Value, 0);
+            var nsecs = BitConverter.ToInt32(_reversedData.Value, 4);
 
             var dateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc)
                 .AddSeconds(secs)

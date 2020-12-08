@@ -95,6 +95,13 @@ namespace RobSharper.Ros.BagReader
             {
                 if (!recordData.Skipped && !recordData.Fetched)
                 {
+                    // Compressed chunks are not yet supported
+                    var compression = (record as Chunk)?.Compression;
+                    if (compression != null && !compression.Equals("none", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        throw new NotSupportedException("Compressed Chunks are not supported");
+                    }
+                    
                     // Read and forget the data length entry.
                     _reader.ReadInt32();
                 }

@@ -109,34 +109,6 @@ namespace RobSharper.Ros.BagReader
             }
         }
 
-        
-        
-        private BagHeader ReadBagHeader()
-        {
-            var recordInfo = ReadNextRecordInfo();
-            SkipNextRecordData();
-
-            var bagHeader = new BagHeader(recordInfo.Header, null);
-            bagHeader.Accept(_visitor);
-            
-            return bagHeader;
-        }
-
-        private RecordInfo ReadNextRecordInfo()
-        {
-            var recordStart = _reader.BaseStream.Position;
-            var header = ReadNextRecordHeader();
-            var dataStart = _reader.BaseStream.Position;
-
-            return new RecordInfo(header, recordStart, dataStart);
-        }
-
-        private void SkipNextRecordData()
-        {
-            var dataLength = _reader.ReadInt32();
-            _reader.SkipBytes(dataLength);
-        }
-
         private RecordHeader ReadNextRecordHeader()
         {
             var recordHeader = new RecordHeader();

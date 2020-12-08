@@ -2,29 +2,36 @@ using System;
 
 namespace RobSharper.Ros.BagReader.Records
 {
-    public class BagHeader
+    public class BagHeader : IBagRecord
     {
         public const int OpCode = 0x03;
-        
-        private readonly RecordHeader _header;
-        
+
         private readonly Lazy<int> _connectionCount;
         private readonly Lazy<int> _chunkCount;
         private readonly Lazy<long> _indexPos;
 
         public int ConnectionCount => _connectionCount.Value;
         public int ChunkCount => _chunkCount.Value;
-        private long IndexPos => _indexPos.Value;
+        public long IndexPos => _indexPos.Value;
+        
+        public RecordData Data { get; }
 
-        public BagHeader(RecordHeader header)
+        public BagHeader(RecordHeader header, RecordData data)
         {
             if (header.OpCode != OpCode)
                 throw new ArgumentException("Invalid OP code", nameof(header));
             
-            _header = header;
-            _connectionCount = new Lazy<int>(() => _header.GetInt32Field("conn_count"));
-            _chunkCount = new Lazy<int>(() => _header.GetInt32Field("chunk_count"));
-            _indexPos = new Lazy<long>(() => _header.GetInt64Field("chunk_count"));
+            var h = header;
+            Data = data ?? throw new ArgumentNullException(nameof(data));
+            
+            _connectionCount = new Lazy<int>(() => h["conn_count"].ConvertToInt32());
+            _chunkCount = new Lazy<int>(() => h["chunk_count"].ConvertToInt32());
+            _indexPos = new Lazy<long>(() => h["chunk_count"].ConvertToInt64());
+        }
+
+        public void Accept(IBagRecordVisitor visitor)
+        {
+            visitor.Visit(this);
         }
     }
 }

@@ -7,15 +7,16 @@ namespace RobSharper.Ros.BagReader
 {
     public class BagReaderFactory
     {
-        public static IBagReader Create(Stream bag)
+        public static IBagReader Create(Stream bag, IBagRecordVisitor visitor)
         {
             if (bag == null) throw new ArgumentNullException(nameof(bag));
+            if (visitor == null) throw new ArgumentNullException(nameof(visitor));
 
             var version = ReadVersion(bag);
 
             if (SupportedRosBagVersions.V2.Equals(version))
             {
-                return new V2BagReader(bag, true);
+                return new V2BagReader(bag, visitor, true);
             }
             
             throw new NotSupportedException($"Rosbag version {version} is not supported");

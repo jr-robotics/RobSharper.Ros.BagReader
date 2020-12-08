@@ -7,14 +7,17 @@ using RobSharper.Ros.MessageEssentials.Serialization;
 
 namespace RobSharper.Ros.BagReader
 {
+    
     public class V2BagReader : IBagReader
-    {    
-        private RosBinaryReader _reader;
+    {
+        private readonly IBagRecordVisitor _visitor;
+        private readonly RosBinaryReader _reader;
         
-        public BagHeader Header { get; }
-        
-        public V2BagReader(Stream bag, bool skipVersionHeader = false)
+        public V2BagReader(Stream bag, IBagRecordVisitor visitor, bool skipVersionHeader = false)
         {
+            if (bag == null) throw new ArgumentNullException(nameof(bag));
+            _visitor = visitor ?? NullVisitor.Instance;
+            
             if (!skipVersionHeader)
             {
                 var version = BagReaderFactory.ReadVersion(bag);
@@ -24,31 +27,112 @@ namespace RobSharper.Ros.BagReader
             }
 
             _reader = new RosBinaryReader(bag);
-
-            Header = ReadBagHeader();
         }
 
+        public void ProcessAll()
+        {
+            var hasNext = true;
+            while (hasNext)
+            {
+                hasNext = ProcessNext();
+            }
+        }
+
+        public bool HasNext()
+        {
+            return _reader.BaseStream.Position < _reader.BaseStream.Length;
+        }
+        
+        public bool ProcessNext()
+        {
+            if (!HasNext())
+                return false;
+
+            var recordHeader = ReadNextRecordHeader();
+            var recordData = new RecordData(_reader);
+
+            ProcessRecord(recordHeader, recordData);
+            
+            recordData.Dispose();
+            return true;
+        }
+
+        private void ProcessRecord(RecordHeader recordHeader, RecordData recordData)
+        {
+            IBagRecord record = null;
+            
+            switch (recordHeader.OpCode)
+            {
+                case BagHeader.OpCode:
+                    record = new BagHeader(recordHeader, recordData);
+                    break;
+                case Chunk.OpCode:
+                    record = new Chunk(recordHeader, recordData);
+                    break;
+                case Connection.OpCode:
+                    record = new Connection(recordHeader, recordData);
+                    break;
+            }
+
+            if (record != null)
+                record.Accept(_visitor);
+
+            
+            // Move to end of the record implicitly for all records except Chunks
+            // (Chunks contain other records as data)
+            if (recordHeader.OpCode != Chunk.OpCode)
+            {
+                MoveToEndOfRecord(recordData);
+            }
+            else
+            {
+                if (!recordData.Skipped && !recordData.Fetched)
+                {
+                    // Read and forget the data length entry.
+                    _reader.ReadInt32();
+                }
+            }
+        }
+
+        private void MoveToEndOfRecord(RecordData recordData)
+        {
+            if (!recordData.Fetched && !recordData.Skipped)
+            {
+                recordData.Skip();
+            }
+        }
+
+        
+        
         private BagHeader ReadBagHeader()
         {
-            var recordInfo = ReadRecordInfo();
-            _reader.SkipBytes(recordInfo.DataLength);
+            var recordInfo = ReadNextRecordInfo();
+            SkipNextRecordData();
 
-            var bagHeader = new BagHeader(recordInfo.Header);
+            var bagHeader = new BagHeader(recordInfo.Header, null);
+            bagHeader.Accept(_visitor);
+            
             return bagHeader;
         }
 
-        private RecordInfo ReadRecordInfo()
+        private RecordInfo ReadNextRecordInfo()
         {
-            var header = ReadRecordHeader();
-            var dataLength = _reader.ReadInt32();
+            var recordStart = _reader.BaseStream.Position;
+            var header = ReadNextRecordHeader();
             var dataStart = _reader.BaseStream.Position;
 
-            return new RecordInfo(header, dataLength, dataStart);
+            return new RecordInfo(header, recordStart, dataStart);
         }
 
-        private RecordHeader ReadRecordHeader()
+        private void SkipNextRecordData()
         {
-            var recordFields = new Dictionary<string, byte[]>();
+            var dataLength = _reader.ReadInt32();
+            _reader.SkipBytes(dataLength);
+        }
+
+        private RecordHeader ReadNextRecordHeader()
+        {
+            var recordHeader = new RecordHeader();
             var recordLength = _reader.ReadInt32();
             var byteCounter = new StreamByteCounter(_reader.BaseStream);
 
@@ -64,16 +148,16 @@ namespace RobSharper.Ros.BagReader
                 var fieldName = Encoding.ASCII.GetString(fieldBuffer, 0, separatorIndex);
                 var fieldValue = new byte[fieldLength - separatorIndex - 1];
                 Array.Copy(fieldBuffer, separatorIndex + 1, fieldValue, 0, fieldValue.Length);
-                
-                recordFields.Add(fieldName, fieldValue);
+
+                var recordHeaderValue = new RecordHeaderValue(fieldValue);
+                recordHeader.Add(fieldName, recordHeaderValue);
             }
 
             if (byteCounter.BytesRead != recordLength)
             {
                 throw new RosbagException($"Expected record length of {recordLength} bytes, but read {byteCounter.BytesRead} bytes.");
             }
-
-            var recordHeader = new RecordHeader(recordFields);
+            
             return recordHeader;
         }
     }

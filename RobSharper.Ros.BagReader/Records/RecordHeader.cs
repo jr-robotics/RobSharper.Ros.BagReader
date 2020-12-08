@@ -1,13 +1,14 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using RobSharper.Ros.MessageEssentials.Serialization;
 
 namespace RobSharper.Ros.BagReader.Records
 {
-    public class RecordHeader
+    public class RecordHeader : IReadOnlyDictionary<string, RecordHeaderValue>
     {
-        private readonly Dictionary<string, byte[]> _recordFields;
+        private readonly Dictionary<string, RecordHeaderValue> _recordFields;
         private int _opCode;
 
         public int OpCode
@@ -16,47 +17,51 @@ namespace RobSharper.Ros.BagReader.Records
             {
                 if (_opCode == 0)
                 {
-                    _opCode = (int)GetByteField("op");
+                    _opCode = (int) this["op"].ConvertToByte();;
                 }
 
                 return _opCode;
             }
         }
 
-        public RecordHeader(Dictionary<string,byte[]> recordFields)
+        public RecordHeaderValue this[string key] => _recordFields[key];
+
+        public IEnumerable<string> Keys => _recordFields.Keys;
+        public IEnumerable<RecordHeaderValue> Values => _recordFields.Values;
+
+        public RecordHeader()
         {
-            _recordFields = recordFields ?? throw new ArgumentNullException(nameof(recordFields));
+            _recordFields = new Dictionary<string, RecordHeaderValue>();
         }
 
-        public RosBinaryReader GetFieldReader(string id)
+        public bool ContainsKey(string key)
         {
-            var value = _recordFields[id];
-            var reader = new RosBinaryReader(new MemoryStream(value));
-            return reader;
+            return _recordFields.ContainsKey(key);
         }
 
-        public byte GetByteField(string id)
+        public bool TryGetValue(string key, out RecordHeaderValue value)
         {
-            using (var r = GetFieldReader(id))
-            {
-                return r.ReadByte();
-            }
+            return _recordFields.TryGetValue(key, out value);
         }
 
-        public int GetInt32Field(string id)
+        public void Add(string fieldName, RecordHeaderValue fieldValue)
         {
-            using (var r = GetFieldReader(id))
-            {
-                return r.ReadInt32();
-            }
+            if (fieldName == null) throw new ArgumentNullException(nameof(fieldName));
+            if (fieldValue == null) throw new ArgumentNullException(nameof(fieldValue));
+            
+            _recordFields.Add(fieldName, fieldValue);
         }
 
-        public long GetInt64Field(string id)
+        public IEnumerator<KeyValuePair<string, RecordHeaderValue>> GetEnumerator()
         {
-            using (var r = GetFieldReader(id))
-            {
-                return r.ReadInt64();
-            }
+            return _recordFields.GetEnumerator();
         }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        public int Count => _recordFields.Count;
     }
 }

@@ -5,17 +5,17 @@ namespace RobSharper.Ros.BagReader.Records
     public class RecordInfo
     {
         public RecordHeader Header { get; }
-        public int DataLength { get; }
-        public long DataStart { get; }
+        public long RecordStartPosition { get; }
+        public long DataStartPosition { get; }
 
-        public RecordInfo(RecordHeader header, int dataLength, long dataStart)
+        public RecordInfo(RecordHeader header, long recordStartPosition, long dataStartPosition)
         {
-            if (dataLength <= 0) throw new ArgumentOutOfRangeException(nameof(dataLength));
-            if (dataStart <= 0) throw new ArgumentOutOfRangeException(nameof(dataStart));
+            if (recordStartPosition <= 0) throw new ArgumentOutOfRangeException(nameof(recordStartPosition));
+            if (dataStartPosition <= 0) throw new ArgumentOutOfRangeException(nameof(dataStartPosition));
             
             Header = header ?? throw new ArgumentNullException(nameof(header));
-            DataLength = dataLength;
-            DataStart = dataStart;
+            RecordStartPosition = recordStartPosition;
+            DataStartPosition = dataStartPosition;
         }
     }
 }

@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using RobSharper.Ros.BagReader.Records;
@@ -72,11 +71,19 @@ namespace RobSharper.Ros.BagReader
                 case Connection.OpCode:
                     record = new Connection(recordHeader, recordData);
                     break;
+                case MessageData.OpCode:
+                    record = new MessageData(recordHeader, recordData);
+                    break;
+                case IndexData.OpCode:
+                    record = new IndexData(recordHeader, recordData);
+                    break;
+                case ChunkInfo.OpCode:
+                    record = new ChunkInfo(recordHeader, recordData);
+                    break;
             }
 
             if (record != null)
                 record.Accept(_visitor);
-
             
             // Move to end of the record implicitly for all records except Chunks
             // (Chunks contain other records as data)

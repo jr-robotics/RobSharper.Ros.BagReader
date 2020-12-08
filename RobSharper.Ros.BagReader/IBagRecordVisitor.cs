@@ -7,5 +7,8 @@ namespace RobSharper.Ros.BagReader
         void Visit(BagHeader record);
         void Visit(Chunk record);
         void Visit(Connection record);
+        void Visit(MessageData record);
+        void Visit(IndexData record);
+        void Visit(ChunkInfo record);
     }
 }

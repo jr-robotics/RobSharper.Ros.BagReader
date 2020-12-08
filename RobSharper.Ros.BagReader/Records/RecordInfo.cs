@@ -2,6 +2,7 @@ using System;
 
 namespace RobSharper.Ros.BagReader.Records
 {
+    [Obsolete]
     public class RecordInfo
     {
         public RecordHeader Header { get; }

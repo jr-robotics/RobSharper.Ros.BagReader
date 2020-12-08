@@ -17,5 +17,20 @@ namespace RobSharper.Ros.BagReader
         public void Visit(Connection record)
         {
         }
+
+        public void Visit(MessageData record)
+        {
+            
+        }
+
+        public void Visit(IndexData record)
+        {
+            
+        }
+
+        public void Visit(ChunkInfo record)
+        {
+            
+        }
     }
 }

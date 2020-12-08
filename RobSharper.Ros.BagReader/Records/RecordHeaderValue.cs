@@ -54,5 +54,17 @@ namespace RobSharper.Ros.BagReader.Records
             
             return BitConverter.ToInt64(_reversedData.Value, 0);
         }
+
+        public DateTime ConvertToDateTime()
+        {
+            var secs = BitConverter.ToInt32(_reversedData.Value, 4);
+            var nsecs = BitConverter.ToInt32(_reversedData.Value, 0);
+
+            var dateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc)
+                .AddSeconds(secs)
+                .AddMilliseconds(nsecs / 1000000.0);
+
+            return dateTime;
+        }
     }
 }

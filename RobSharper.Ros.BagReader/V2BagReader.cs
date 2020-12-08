@@ -47,7 +47,7 @@ namespace RobSharper.Ros.BagReader
             if (!HasNext())
                 return false;
 
-            var recordHeader = ReadNextRecordHeader();
+            var recordHeader = _reader.ReadBagRecordHeader();
             var recordData = new RecordData(_reader);
 
             ProcessRecord(recordHeader, recordData);
@@ -85,19 +85,27 @@ namespace RobSharper.Ros.BagReader
             if (record != null)
                 record.Accept(_visitor);
             
+            MoveToEndOfRecord(recordHeader, recordData);
+        }
+
+        private void MoveToEndOfRecord(RecordHeader recordHeader, RecordData recordData)
+        {
             // Move to end of the record implicitly for all records except Chunks
             // (Chunks contain other records as data)
             if (recordHeader.OpCode != Chunk.OpCode)
             {
-                MoveToEndOfRecord(recordData);
+                if (!recordData.Fetched && !recordData.Skipped)
+                {
+                    recordData.Skip();
+                }
             }
             else
             {
                 if (!recordData.Skipped && !recordData.Fetched)
                 {
                     // Compressed chunks are not yet supported
-                    var compression = (record as Chunk)?.Compression;
-                    if (compression != null && !compression.Equals("none", StringComparison.InvariantCultureIgnoreCase))
+                    var chunk = new Chunk(recordHeader, recordData);
+                    if (!chunk.Compression.Equals("none", StringComparison.InvariantCultureIgnoreCase))
                     {
                         throw new NotSupportedException("Compressed Chunks are not supported");
                     }
@@ -106,45 +114,6 @@ namespace RobSharper.Ros.BagReader
                     _reader.ReadInt32();
                 }
             }
-        }
-
-        private void MoveToEndOfRecord(RecordData recordData)
-        {
-            if (!recordData.Fetched && !recordData.Skipped)
-            {
-                recordData.Skip();
-            }
-        }
-
-        private RecordHeader ReadNextRecordHeader()
-        {
-            var recordHeader = new RecordHeader();
-            var recordLength = _reader.ReadInt32();
-            var byteCounter = new StreamByteCounter(_reader.BaseStream);
-
-            var fieldBuffer = new byte[256];
-            
-            while (byteCounter.BytesRead < recordLength)
-            {
-                var fieldLength = _reader.ReadInt32();
-                _reader.Read(fieldBuffer, 0, fieldLength);
-
-                var separatorIndex = Array.IndexOf(fieldBuffer, (byte) '=');
-                
-                var fieldName = Encoding.ASCII.GetString(fieldBuffer, 0, separatorIndex);
-                var fieldValue = new byte[fieldLength - separatorIndex - 1];
-                Array.Copy(fieldBuffer, separatorIndex + 1, fieldValue, 0, fieldValue.Length);
-
-                var recordHeaderValue = new RecordHeaderValue(fieldValue);
-                recordHeader.Add(fieldName, recordHeaderValue);
-            }
-
-            if (byteCounter.BytesRead != recordLength)
-            {
-                throw new RosbagException($"Expected record length of {recordLength} bytes, but read {byteCounter.BytesRead} bytes.");
-            }
-            
-            return recordHeader;
         }
     }
 }

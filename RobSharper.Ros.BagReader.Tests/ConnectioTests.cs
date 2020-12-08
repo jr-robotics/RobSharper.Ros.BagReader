@@ -30,5 +30,20 @@ namespace RobSharper.Ros.BagReader.Tests
             
             visitorMock.Verify(x => x.Visit(It.IsAny<Connection>()), Times.AtLeastOnce);
         }
+
+        [Fact]
+        public void Can_read_connection_data()
+        {
+            var visitorMock = new Mock<IBagRecordVisitor>();
+            visitorMock.Setup(x => x.Visit(It.IsAny<Connection>()))
+                .Callback<Connection>(con =>
+                {
+                    var md5 = con.MD5Sum;
+                });
+            
+            var reader = BagReaderFactory.Create(_bagStream, visitorMock.Object);
+            
+            reader.ProcessAll();
+        }
     }
 }

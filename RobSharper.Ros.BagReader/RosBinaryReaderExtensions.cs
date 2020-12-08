@@ -31,18 +31,28 @@ namespace RobSharper.Ros.BagReader
                 }
             }
         }
-        
+
         public static RecordHeader ReadBagRecordHeader(this RosBinaryReader reader)
         {
-            var recordHeader = new RecordHeader();
-            var recordLength = reader.ReadInt32();
-            var byteCounter = new StreamByteCounter(reader.BaseStream);
-
-            var fieldBuffer = new byte[256];
+            var headerLength = reader.ReadInt32();
+            return reader.ReadBagRecordHeader(headerLength);
+        }
+        
+        public static RecordHeader ReadBagRecordHeader(this RosBinaryReader reader, int headerLength)
+        {
+            const int initialBufferSize = 64;
             
-            while (byteCounter.BytesRead < recordLength)
+            var recordHeader = new RecordHeader();
+            var byteCounter = new StreamByteCounter(reader.BaseStream);
+            var fieldBuffer = new byte[initialBufferSize];
+            
+            while (byteCounter.BytesRead < headerLength)
             {
                 var fieldLength = reader.ReadInt32();
+                
+                if (fieldLength > fieldBuffer.Length)
+                    fieldBuffer = new byte[fieldLength];
+                
                 reader.Read(fieldBuffer, 0, fieldLength);
 
                 var separatorIndex = Array.IndexOf(fieldBuffer, (byte) '=');
@@ -55,9 +65,9 @@ namespace RobSharper.Ros.BagReader
                 recordHeader.Add(fieldName, recordHeaderValue);
             }
 
-            if (byteCounter.BytesRead != recordLength)
+            if (byteCounter.BytesRead != headerLength)
             {
-                throw new RosbagException($"Expected record length of {recordLength} bytes, but read {byteCounter.BytesRead} bytes.");
+                throw new RosbagException($"Expected record length of {headerLength} bytes, but read {byteCounter.BytesRead} bytes.");
             }
             
             return recordHeader;

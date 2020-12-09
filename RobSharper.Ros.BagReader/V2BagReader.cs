@@ -11,6 +11,7 @@ namespace RobSharper.Ros.BagReader
         private readonly IBagRecordVisitor _visitor;
         private readonly Stream _stream;
         private readonly RosBinaryReader _reader;
+        private readonly long _bagStartPosition;
 
         public V2BagReader(Stream bag, IBagRecordVisitor visitor, bool skipVersionHeader = false)
         {
@@ -26,6 +27,7 @@ namespace RobSharper.Ros.BagReader
             }
 
             _stream = bag;
+            _bagStartPosition = bag.Position;
             _reader = new RosBinaryReader(bag);
         }
 
@@ -36,6 +38,14 @@ namespace RobSharper.Ros.BagReader
             {
                 hasNext = ProcessNext();
             }
+        }
+
+        public void Reset()
+        {
+            if (!_stream.CanSeek)
+                throw new NotSupportedException("Cannot reset underlying stream");
+
+            _stream.Seek(_bagStartPosition, SeekOrigin.Begin);
         }
 
         public bool HasNext()

@@ -1,5 +1,7 @@
 using System;
 using System.IO;
+using Moq;
+using RobSharper.Ros.BagReader.Records;
 using Xunit;
 
 namespace RobSharper.Ros.BagReader.Tests
@@ -30,6 +32,25 @@ namespace RobSharper.Ros.BagReader.Tests
             
             var rosbag = BagReaderFactory.Create(_bagStream, new NullVisitor());
             rosbag.ProcessAll();
+        }
+
+
+        [Theory]
+        [ClassData(typeof(Bagfiles.All))]
+        public void Can_reset_reader(string bagfile)
+        {
+            SetBagFile(bagfile);
+            
+            var visitorMock = new Mock<IBagRecordVisitor>();
+            var reader = BagReaderFactory.Create(_bagStream, visitorMock.Object);
+            
+            reader.ProcessNext();
+            reader.Reset();
+            reader.ProcessNext();
+            
+            // The first record is a BagHeader and a bag contains only one BagHeader
+            visitorMock.Verify(x => x.Visit(It.IsAny<BagHeader>()), Times.Exactly(2));
+            visitorMock.VerifyNoOtherCalls();
         }
 
         public void Dispose()

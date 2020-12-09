@@ -7,5 +7,6 @@ namespace RobSharper.Ros.BagReader
         bool HasNext();
         bool ProcessNext();
         void ProcessAll();
+        void Reset();
     }
 }

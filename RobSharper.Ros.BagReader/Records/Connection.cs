@@ -92,7 +92,7 @@ namespace RobSharper.Ros.BagReader.Records
             _headerTopic = new Lazy<string>(() => h["topic"].ConvertToString());
         }
         
-        private void ReadData()
+        public void ReadData()
         {
             if (_dataRead)
                 return;

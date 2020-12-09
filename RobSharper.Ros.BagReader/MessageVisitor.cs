@@ -24,6 +24,7 @@ namespace RobSharper.Ros.BagReader
 
         public virtual void Visit(Connection record)
         {
+            record.ReadData();
             _connections[record.ConnectionId] = record;
         }
 

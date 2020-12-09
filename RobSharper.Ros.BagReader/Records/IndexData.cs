@@ -12,6 +12,7 @@ namespace RobSharper.Ros.BagReader.Records
         private readonly Lazy<int> _count;
         private readonly RecordData _rawData;
         private IEnumerable<IndexItem> _data;
+        private bool _dataRead;
 
         public int RecordVersion => _recordVersion.Value;
         public int ConnectionId => _connectionId.Value;
@@ -21,11 +22,7 @@ namespace RobSharper.Ros.BagReader.Records
         {
             get
             {
-                if (_data == null)
-                {
-                    _data = ReadData();
-                }
-
+                ReadData();
                 return _data;
             }
         }
@@ -48,8 +45,11 @@ namespace RobSharper.Ros.BagReader.Records
             visitor.Visit(this);
         }
 
-        private IEnumerable<IndexItem> ReadData()
+        public void ReadData()
         {
+            if (_dataRead)
+                return;
+
             if (RecordVersion != 1)
                 throw new NotSupportedException($"Record version {RecordVersion} is not supported");
 
@@ -64,7 +64,8 @@ namespace RobSharper.Ros.BagReader.Records
                 items.Add(item);
             }
 
-            return items;
+            _data = items;
+            _dataRead = true;
         }
     }
 }

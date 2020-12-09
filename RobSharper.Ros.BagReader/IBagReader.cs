@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace RobSharper.Ros.BagReader
 {
     public interface IBagReader

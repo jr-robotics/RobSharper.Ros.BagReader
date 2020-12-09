@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using System.Text;
 using RobSharper.Ros.BagReader.Records;
 using RobSharper.Ros.MessageEssentials.Serialization;
 
@@ -10,8 +9,9 @@ namespace RobSharper.Ros.BagReader
     public class V2BagReader : IBagReader
     {
         private readonly IBagRecordVisitor _visitor;
+        private readonly Stream _stream;
         private readonly RosBinaryReader _reader;
-        
+
         public V2BagReader(Stream bag, IBagRecordVisitor visitor, bool skipVersionHeader = false)
         {
             if (bag == null) throw new ArgumentNullException(nameof(bag));
@@ -25,6 +25,7 @@ namespace RobSharper.Ros.BagReader
                     throw new NotSupportedException("Rosbag version {version} expected");
             }
 
+            _stream = bag;
             _reader = new RosBinaryReader(bag);
         }
 
@@ -48,72 +49,52 @@ namespace RobSharper.Ros.BagReader
                 return false;
 
             var recordHeader = _reader.ReadBagRecordHeader();
-            var recordData = new RecordData(_reader);
+            var recordDataReader = CreateRecordDataReader();
 
-            ProcessRecord(recordHeader, recordData);
+            ProcessRecord(recordHeader, recordDataReader);
             
-            recordData.Dispose();
             return true;
         }
 
-        private void ProcessRecord(RecordHeader recordHeader, RecordData recordData)
+        private RosBinaryReader CreateRecordDataReader()
+        {
+            var length = _reader.ReadInt32();
+            var confinedStream = new ConfinedReadOnlyStream(_stream, length);
+            var dataReader = new RosBinaryReader(confinedStream);
+
+            return dataReader;
+        }
+
+        private void ProcessRecord(RecordHeader recordHeader, RosBinaryReader recordDataReader)
         {
             IBagRecord record = null;
             
             switch (recordHeader.OpCode)
             {
                 case BagHeader.OpCode:
-                    record = new BagHeader(recordHeader, recordData);
+                    record = new BagHeader(recordHeader, recordDataReader);
                     break;
                 case Chunk.OpCode:
-                    record = new Chunk(recordHeader, recordData);
+                    record = new Chunk(recordHeader, recordDataReader);
                     break;
                 case Connection.OpCode:
-                    record = new Connection(recordHeader, recordData);
+                    record = new Connection(recordHeader, recordDataReader);
                     break;
                 case MessageData.OpCode:
-                    record = new MessageData(recordHeader, recordData);
+                    record = new MessageData(recordHeader, recordDataReader);
                     break;
                 case IndexData.OpCode:
-                    record = new IndexData(recordHeader, recordData);
+                    record = new IndexData(recordHeader, recordDataReader);
                     break;
                 case ChunkInfo.OpCode:
-                    record = new ChunkInfo(recordHeader, recordData);
+                    record = new ChunkInfo(recordHeader, recordDataReader);
                     break;
             }
 
             if (record != null)
                 record.Accept(_visitor);
-            
-            MoveToEndOfRecord(recordHeader, recordData);
-        }
 
-        private void MoveToEndOfRecord(RecordHeader recordHeader, RecordData recordData)
-        {
-            // Move to end of the record implicitly for all records except Chunks
-            // (Chunks contain other records as data)
-            if (recordHeader.OpCode != Chunk.OpCode)
-            {
-                if (!recordData.Fetched && !recordData.Skipped)
-                {
-                    recordData.Skip();
-                }
-            }
-            else
-            {
-                if (!recordData.Skipped && !recordData.Fetched)
-                {
-                    // Compressed chunks are not yet supported
-                    var chunk = new Chunk(recordHeader, recordData);
-                    if (!chunk.Compression.Equals("none", StringComparison.InvariantCultureIgnoreCase))
-                    {
-                        throw new NotSupportedException("Compressed Chunks are not supported");
-                    }
-                    
-                    // Read and forget the data length entry.
-                    _reader.ReadInt32();
-                }
-            }
+            record.Dispose();
         }
     }
 }

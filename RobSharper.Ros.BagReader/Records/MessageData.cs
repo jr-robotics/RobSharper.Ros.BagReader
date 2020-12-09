@@ -1,8 +1,9 @@
 using System;
+using RobSharper.Ros.MessageEssentials.Serialization;
 
 namespace RobSharper.Ros.BagReader.Records
 {
-    public class MessageData : IBagRecord
+    public class MessageData : RecordBase
     {
         public const int OpCode = 0x02;
 
@@ -12,9 +13,9 @@ namespace RobSharper.Ros.BagReader.Records
         public int ConnectionId => _connectionId.Value;
         public DateTime Time => _time.Value;
         
-        public RecordData Data { get; }
+        public RosBinaryReader Data { get; }
 
-        public MessageData(RecordHeader header, RecordData data)
+        public MessageData(RecordHeader header, RosBinaryReader data) : base(data)
         {
             if (header.OpCode != OpCode)
                 throw new ArgumentException("Invalid OP code", nameof(header));
@@ -26,7 +27,7 @@ namespace RobSharper.Ros.BagReader.Records
             _time = new Lazy<DateTime>(() => h["time"].ConvertToDateTime());
         }
 
-        public void Accept(IBagRecordVisitor visitor)
+        public override void Accept(IBagRecordVisitor visitor)
         {
             visitor.Visit(this);
         }

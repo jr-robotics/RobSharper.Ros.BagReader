@@ -1,9 +1,10 @@
 using System;
 using System.Collections.Generic;
+using RobSharper.Ros.MessageEssentials.Serialization;
 
 namespace RobSharper.Ros.BagReader.Records
 {
-    public class ChunkInfo : IBagRecord
+    public class ChunkInfo : RecordBase
     {
         public const int OpCode = 0x6;
 
@@ -12,7 +13,7 @@ namespace RobSharper.Ros.BagReader.Records
         private readonly Lazy<DateTime> _startTime;
         private readonly Lazy<DateTime> _endTime;
         private readonly Lazy<int> _count;
-        private readonly RecordData _rawData;
+        private readonly RosBinaryReader _dataReader;
         private IEnumerable<ChunkInfoItem> _data;
         private bool _dataRead;
 
@@ -31,13 +32,13 @@ namespace RobSharper.Ros.BagReader.Records
             }
         }
 
-        public ChunkInfo(RecordHeader header, RecordData data)
+        public ChunkInfo(RecordHeader header, RosBinaryReader data) : base(data)
         {
             if (header.OpCode != OpCode)
                 throw new ArgumentException("Invalid OP code", nameof(header));
             
             var h = header;
-            _rawData = data ?? throw new ArgumentNullException(nameof(data));
+            _dataReader = data ?? throw new ArgumentNullException(nameof(data));
             
             _recordVersion = new Lazy<int>(() => h["ver"].ConvertToInt32());
             _chunkPosition = new Lazy<long>(() => h["chunk_pos"].ConvertToInt64());
@@ -46,7 +47,7 @@ namespace RobSharper.Ros.BagReader.Records
             _count = new Lazy<int>(() => h["count"].ConvertToInt32());
         }
 
-        public void Accept(IBagRecordVisitor visitor)
+        public override void Accept(IBagRecordVisitor visitor)
         {
             visitor.Visit(this);
         }
@@ -63,8 +64,8 @@ namespace RobSharper.Ros.BagReader.Records
             
             for (var i = 0; i < Count; i++)
             {
-                var conn = _rawData.Reader.ReadInt32();
-                var count = _rawData.Reader.ReadInt32();
+                var conn = _dataReader.ReadInt32();
+                var count = _dataReader.ReadInt32();
                 var item = new ChunkInfoItem(conn, count);
 
                 items.Add(item);

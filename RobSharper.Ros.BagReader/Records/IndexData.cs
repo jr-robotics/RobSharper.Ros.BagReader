@@ -1,16 +1,17 @@
 using System;
 using System.Collections.Generic;
+using RobSharper.Ros.MessageEssentials.Serialization;
 
 namespace RobSharper.Ros.BagReader.Records
 {
-    public class IndexData : IBagRecord
+    public class IndexData : RecordBase
     {
         public const int OpCode = 0x04;
 
         private readonly Lazy<int> _recordVersion;
         private readonly Lazy<int> _connectionId;
         private readonly Lazy<int> _count;
-        private readonly RecordData _rawData;
+        private readonly RosBinaryReader _dataReader;
         private IEnumerable<IndexItem> _data;
         private bool _dataRead;
 
@@ -27,20 +28,20 @@ namespace RobSharper.Ros.BagReader.Records
             }
         }
 
-        public IndexData(RecordHeader header, RecordData data)
+        public IndexData(RecordHeader header, RosBinaryReader data) : base(data)
         {
             if (header.OpCode != OpCode)
                 throw new ArgumentException("Invalid OP code", nameof(header));
             
             var h = header;
-            _rawData = data ?? throw new ArgumentNullException(nameof(data));
+            _dataReader = data ?? throw new ArgumentNullException(nameof(data));
             
             _recordVersion = new Lazy<int>(() => h["ver"].ConvertToInt32());
             _connectionId = new Lazy<int>(() => h["conn"].ConvertToInt32());
             _count = new Lazy<int>(() => h["count"].ConvertToInt32());
         }
 
-        public void Accept(IBagRecordVisitor visitor)
+        public override void Accept(IBagRecordVisitor visitor)
         {
             visitor.Visit(this);
         }
@@ -57,8 +58,8 @@ namespace RobSharper.Ros.BagReader.Records
             
             for (var i = 0; i < Count; i++)
             {
-                var time = (DateTime)_rawData.Reader.ReadBuiltInType(typeof(DateTime));
-                var chunkOffset = _rawData.Reader.ReadInt32();
+                var time = (DateTime)_dataReader.ReadBuiltInType(typeof(DateTime));
+                var chunkOffset = _dataReader.ReadInt32();
                 var item = new IndexItem(time, chunkOffset);
 
                 items.Add(item);

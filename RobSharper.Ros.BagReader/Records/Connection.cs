@@ -1,14 +1,15 @@
 using System;
+using RobSharper.Ros.MessageEssentials.Serialization;
 
 namespace RobSharper.Ros.BagReader.Records
 {
-    public class Connection : IBagRecord
+    public class Connection : RecordBase
     {
         public const int OpCode = 0x07;
 
         private readonly Lazy<int> _connectionId;
         private readonly Lazy<string> _headerTopic;
-        private readonly RecordData _rawData;
+        private readonly RosBinaryReader _data;
         
         private bool _dataRead;
         private string _dataTopic;
@@ -77,7 +78,7 @@ namespace RobSharper.Ros.BagReader.Records
         }
 
 
-        public Connection(RecordHeader header, RecordData data)
+        public Connection(RecordHeader header, RosBinaryReader data) : base(data)
         {
             if (header == null) throw new ArgumentNullException(nameof(header));
             if (data == null) throw new ArgumentNullException(nameof(data));
@@ -86,7 +87,7 @@ namespace RobSharper.Ros.BagReader.Records
                 throw new ArgumentException("Invalid OP code", nameof(header));
             
             var h = header;
-            _rawData = data;
+            _data = data;
 
             _connectionId = new Lazy<int>(() => h["conn"].ConvertToInt32());
             _headerTopic = new Lazy<string>(() => h["topic"].ConvertToString());
@@ -97,7 +98,7 @@ namespace RobSharper.Ros.BagReader.Records
             if (_dataRead)
                 return;
             
-            var values = _rawData.Reader.ReadBagRecordHeader(_rawData.RawData.Length);
+            var values = _data.ReadBagRecordHeader((int)_data.BaseStream.Length);
 
             _dataTopic = values["topic"].ConvertToString();
             _type = values["type"].ConvertToString();
@@ -117,7 +118,7 @@ namespace RobSharper.Ros.BagReader.Records
             _dataRead = true;
         }
 
-        public void Accept(IBagRecordVisitor visitor)
+        public override void Accept(IBagRecordVisitor visitor)
         {
             visitor.Visit(this);
         }

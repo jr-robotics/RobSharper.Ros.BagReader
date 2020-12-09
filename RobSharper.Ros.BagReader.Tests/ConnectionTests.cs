@@ -82,7 +82,7 @@ namespace RobSharper.Ros.BagReader.Tests
         public void Can_read_Type(string bagfile)
         {
             SetBagFile(bagfile);
-            VisitorCallbackTest(connection => connection.Type.Should().NotBeNullOrEmpty());
+            VisitorCallbackTest(connection => connection.Type.Should().NotBeNull());
         }
 
         [Theory]

@@ -49,7 +49,8 @@ namespace RobSharper.Ros.BagReader.Tests
             reader.ProcessNext();
             
             // The first record is a BagHeader and a bag contains only one BagHeader
-            visitorMock.Verify(x => x.Visit(It.IsAny<BagHeader>()), Times.Exactly(2));
+            visitorMock.Verify(x => x.Visit(It.IsAny<BagHeader>()), Times.Exactly(2), "Visit(BagHeader) should be called");
+            visitorMock.Verify(x => x.Reset(), Times.Once, "Reset should be called.");
             visitorMock.VerifyNoOtherCalls();
         }
 

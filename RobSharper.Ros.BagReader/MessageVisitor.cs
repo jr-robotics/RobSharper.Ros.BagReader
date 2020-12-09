@@ -34,7 +34,7 @@ namespace RobSharper.Ros.BagReader
             Visit(record, connection);
         }
 
-        public abstract void Visit(MessageData record, Connection connection);
+        public abstract void Visit(MessageData message, Connection connection);
 
         public virtual void Visit(IndexData record)
         {

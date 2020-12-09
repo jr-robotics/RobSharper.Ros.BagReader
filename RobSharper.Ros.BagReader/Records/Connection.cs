@@ -1,4 +1,5 @@
 using System;
+using RobSharper.Ros.MessageEssentials;
 using RobSharper.Ros.MessageEssentials.Serialization;
 
 namespace RobSharper.Ros.BagReader.Records
@@ -13,7 +14,7 @@ namespace RobSharper.Ros.BagReader.Records
         
         private bool _dataRead;
         private string _dataTopic;
-        private string _type;
+        private RosType _type;
         private string _md5Sum;
         private string _messageDefinition;
         private string _callerId;
@@ -32,7 +33,7 @@ namespace RobSharper.Ros.BagReader.Records
             }
         }
 
-        public string Type
+        public RosType Type
         {
             get
             {
@@ -101,7 +102,7 @@ namespace RobSharper.Ros.BagReader.Records
             var values = _data.ReadBagRecordHeader((int)_data.BaseStream.Length);
 
             _dataTopic = values["topic"].ConvertToString();
-            _type = values["type"].ConvertToString();
+            _type = RosType.Parse(values["type"].ConvertToString());
             _md5Sum = values["md5sum"].ConvertToString();
             _messageDefinition = values["message_definition"].ConvertToString();
 

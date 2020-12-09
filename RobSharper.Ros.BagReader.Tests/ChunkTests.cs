@@ -9,27 +9,29 @@ namespace RobSharper.Ros.BagReader.Tests
 {
     public class ChunkTests : IDisposable
     {
-        private readonly FileStream _bagStream;
+        private FileStream _bagStream;
 
-        public ChunkTests()
+        private void SetBagFile(string filePath)
         {
-            _bagStream = File.OpenRead("bags/2019-01-19-16-25-02.bag");
+            _bagStream = File.OpenRead(filePath);
         }
 
         public void Dispose()
         {
-            _bagStream.Dispose();
+            _bagStream?.Dispose();
         }
 
-        [Fact]
-        public void Bag_contains_one_chunk()
+        [Theory]
+        [ClassData(typeof(Bagfiles.All))]
+        public void Bag_contains_at_least_chunk(string bagfile)
         {
+            SetBagFile(bagfile);
             var visitorMock = new Mock<IBagRecordVisitor>();
             var reader = BagReaderFactory.Create(_bagStream, visitorMock.Object);
             
             reader.ProcessAll();
             
-            visitorMock.Verify(x => x.Visit(It.IsAny<Chunk>()), Times.Once);
+            visitorMock.Verify(x => x.Visit(It.IsAny<Chunk>()), Times.AtLeastOnce);
         }
         
         private void VisitorCallbackTest(Action<Chunk> action)
@@ -43,21 +45,27 @@ namespace RobSharper.Ros.BagReader.Tests
             reader.ProcessAll();
         }
 
-        [Fact]
-        public void Can_read_Compression()
+        [Theory]
+        [ClassData(typeof(Bagfiles.All))]
+        public void Can_read_Compression(string bagfile)
         {
+            SetBagFile(bagfile);
             VisitorCallbackTest(chunk => chunk.Compression.Should().BeOneOf("none", "bz2"));
         }
 
-        [Fact]
-        public void Can_read_UncompressedSize()
+        [Theory]
+        [ClassData(typeof(Bagfiles.All))]
+        public void Can_read_UncompressedSize(string bagfile)
         {
+            SetBagFile(bagfile);
             VisitorCallbackTest(chunk => chunk.UncompressedSize.Should().BeGreaterThan(0));
         }
 
-        [Fact]
-        public void Can_skip_chunk()
+        [Theory]
+        [ClassData(typeof(Bagfiles.All))]
+        public void Can_skip_chunk(string bagfile)
         {
+            SetBagFile(bagfile);
             var visitorMock = new Mock<IBagRecordVisitor>();
             visitorMock.Setup(x => x.Visit(It.IsAny<Chunk>()))
                 .Callback<Chunk>(chunk =>

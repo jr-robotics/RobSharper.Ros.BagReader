@@ -9,21 +9,23 @@ namespace RobSharper.Ros.BagReader.Tests
 {
     public class BagHeaderTests : IDisposable
     {
-        private readonly FileStream _bagStream;
+        private FileStream _bagStream;
 
-        public BagHeaderTests()
+        private void SetBagFile(string filePath)
         {
-            _bagStream = File.OpenRead("bags/2019-01-19-16-25-02.bag");
+            _bagStream = File.OpenRead(filePath);
         }
 
         public void Dispose()
         {
-            _bagStream.Dispose();
+            _bagStream?.Dispose();
         }
 
-        [Fact]
-        public void Bag_contains_one_header()
+        [Theory]
+        [ClassData(typeof(Bagfiles.All))]
+        public void Bag_contains_one_header(string bagfile)
         {
+            SetBagFile(bagfile);
             var visitorMock = new Mock<IBagRecordVisitor>();
             var reader = BagReaderFactory.Create(_bagStream, visitorMock.Object);
             
@@ -32,10 +34,11 @@ namespace RobSharper.Ros.BagReader.Tests
             visitorMock.Verify(x => x.Visit(It.IsAny<BagHeader>()), Times.Once);
         }
         
-
-        [Fact]
-        public void Bag_header_is_first_record()
+        [Theory]
+        [ClassData(typeof(Bagfiles.All))]
+        public void Bag_header_is_first_record(string bagfile)
         {
+            SetBagFile(bagfile);
             var visitorMock = new Mock<IBagRecordVisitor>();
             var reader = BagReaderFactory.Create(_bagStream, visitorMock.Object);
             
@@ -55,21 +58,27 @@ namespace RobSharper.Ros.BagReader.Tests
             reader.ProcessAll();
         }
 
-        [Fact]
-        public void Can_read_ChunkCount()
+        [Theory]
+        [ClassData(typeof(Bagfiles.All))]
+        public void Can_read_ChunkCount(string bagfile)
         {
+            SetBagFile(bagfile);
             VisitorCallbackTest(header => header.ChunkCount.Should().BeGreaterOrEqualTo(0));
         }
 
-        [Fact]
-        public void Can_read_ConnectionCount()
+        [Theory]
+        [ClassData(typeof(Bagfiles.All))]
+        public void Can_read_ConnectionCount(string bagfile)
         {
+            SetBagFile(bagfile);
             VisitorCallbackTest(header => header.ConnectionCount.Should().BeGreaterOrEqualTo(0));
         }
 
-        [Fact]
-        public void Can_read_IndexPos()
+        [Theory]
+        [ClassData(typeof(Bagfiles.All))]
+        public void Can_read_IndexPos(string bagfile)
         {
+            SetBagFile(bagfile);
             VisitorCallbackTest(header => header.IndexPos.Should().BeGreaterOrEqualTo(0));
         }
     }

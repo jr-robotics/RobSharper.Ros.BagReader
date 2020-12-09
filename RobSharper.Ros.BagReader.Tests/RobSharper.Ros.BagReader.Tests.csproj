@@ -24,10 +24,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="bags" />
-    </ItemGroup>
-
-    <ItemGroup>
       <ProjectReference Include="..\RobSharper.Ros.BagReader\RobSharper.Ros.BagReader.csproj" />
     </ItemGroup>
 

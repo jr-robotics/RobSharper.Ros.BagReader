@@ -7,23 +7,25 @@ using Xunit;
 
 namespace RobSharper.Ros.BagReader.Tests
 {
-    public class ConnectioTests : IDisposable
+    public class ConnectionTests : IDisposable
     {
-        private readonly FileStream _bagStream;
+        private FileStream _bagStream;
 
-        public ConnectioTests()
+        private void SetBagFile(string filePath)
         {
-            _bagStream = File.OpenRead("bags/2019-01-19-16-25-02.bag");
+            _bagStream = File.OpenRead(filePath);
         }
 
         public void Dispose()
         {
-            _bagStream.Dispose();
+            _bagStream?.Dispose();
         }
 
-        [Fact]
-        public void Bag_contains_connections()
+        [Theory]
+        [ClassData(typeof(Bagfiles.All))]
+        public void Bag_contains_connections(string bagfile)
         {
+            SetBagFile(bagfile);
             var visitorMock = new Mock<IBagRecordVisitor>();
             var reader = BagReaderFactory.Create(_bagStream, visitorMock.Object);
             
@@ -43,45 +45,59 @@ namespace RobSharper.Ros.BagReader.Tests
             reader.ProcessAll();
         }
 
-        [Fact]
-        public void Can_read_MD5Sum()
+        [Theory]
+        [ClassData(typeof(Bagfiles.All))]
+        public void Can_read_MD5Sum(string bagfile)
         {
+            SetBagFile(bagfile);
             VisitorCallbackTest(connection => connection.MD5Sum.Should().NotBeNullOrEmpty());
         }
 
-        [Fact]
-        public void Can_read_ConnectionId()
+        [Theory]
+        [ClassData(typeof(Bagfiles.All))]
+        public void Can_read_ConnectionId(string bagfile)
         {
+            SetBagFile(bagfile);
             VisitorCallbackTest(connection => connection.ConnectionId.Should().BeInRange(int.MinValue, int.MaxValue));
         }
 
-        [Fact]
-        public void Can_read_HeaderTopic()
+        [Theory]
+        [ClassData(typeof(Bagfiles.All))]
+        public void Can_read_HeaderTopic(string bagfile)
         {
+            SetBagFile(bagfile);
             VisitorCallbackTest(connection => connection.HeaderTopic.Should().NotBeNullOrEmpty());
         }
 
-        [Fact]
-        public void Can_read_DataTopic()
+        [Theory]
+        [ClassData(typeof(Bagfiles.All))]
+        public void Can_read_DataTopic(string bagfile)
         {
+            SetBagFile(bagfile);
             VisitorCallbackTest(connection => connection.DataTopic.Should().NotBeNullOrEmpty());
         }
 
-        [Fact]
-        public void Can_read_Type()
+        [Theory]
+        [ClassData(typeof(Bagfiles.All))]
+        public void Can_read_Type(string bagfile)
         {
+            SetBagFile(bagfile);
             VisitorCallbackTest(connection => connection.Type.Should().NotBeNullOrEmpty());
         }
 
-        [Fact]
-        public void Can_read_MessageDefinition()
+        [Theory]
+        [ClassData(typeof(Bagfiles.All))]
+        public void Can_read_MessageDefinition(string bagfile)
         {
+            SetBagFile(bagfile);
             VisitorCallbackTest(connection => connection.MessageDefinition.Should().NotBeNullOrEmpty());
         }
 
-        [Fact]
-        public void Can_read_CallerId()
+        [Theory]
+        [ClassData(typeof(Bagfiles.All))]
+        public void Can_read_CallerId(string bagfile)
         {
+            SetBagFile(bagfile);
             VisitorCallbackTest(connection =>
             {
                 var optionalCallerId = connection.CallerId;
@@ -89,9 +105,11 @@ namespace RobSharper.Ros.BagReader.Tests
             });
         }
 
-        [Fact]
-        public void Can_read_Latching()
+        [Theory]
+        [ClassData(typeof(Bagfiles.All))]
+        public void Can_read_Latching(string bagfile)
         {
+            SetBagFile(bagfile);
             VisitorCallbackTest(connection => Assert.True(connection.Latching == true || connection.Latching == false));
         }
     }

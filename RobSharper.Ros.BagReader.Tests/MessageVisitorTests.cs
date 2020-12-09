@@ -10,21 +10,23 @@ namespace RobSharper.Ros.BagReader.Tests
 {
     public class MessageVisitorTests : IDisposable
     {
-        private readonly FileStream _bagStream;
+        private FileStream _bagStream;
 
-        public MessageVisitorTests()
+        private void SetBagFile(string filePath)
         {
-            _bagStream = File.OpenRead("bags/2019-01-19-16-25-02.bag");
+            _bagStream = File.OpenRead(filePath);
         }
 
         public void Dispose()
         {
-            _bagStream.Dispose();
+            _bagStream?.Dispose();
         }
 
-        [Fact]
-        public void MessageVisitor_stores_all_connections()
+        [Theory]
+        [ClassData(typeof(Bagfiles.All))]
+        public void MessageVisitor_stores_all_connections(string bagfile)
         {
+            SetBagFile(bagfile);
             var connectionCount = -1;
             
             var visitorMock = new Mock<MessageVisitorBase>();
@@ -43,9 +45,12 @@ namespace RobSharper.Ros.BagReader.Tests
         } 
         
 
-        [Fact]
-        public void MessageVisitor_calls_visit_with_message_and_connection()
+        [Theory]
+        [ClassData(typeof(Bagfiles.All))]
+        public void MessageVisitor_calls_visit_with_message_and_connection(string bagfile)
         {
+            SetBagFile(bagfile);
+            
             var visitorMock = new Mock<MessageVisitorBase>();
             visitorMock.Setup(x => x.Visit(It.IsAny<Connection>())).CallBase();
             visitorMock.Setup(x => x.Visit(It.IsAny<MessageData>())).CallBase();

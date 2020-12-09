@@ -9,21 +9,23 @@ namespace RobSharper.Ros.BagReader.Tests
 {
     public class MessageDataTests : IDisposable
     {
-        private readonly FileStream _bagStream;
+        private FileStream _bagStream;
 
-        public MessageDataTests()
+        private void SetBagFile(string filePath)
         {
-            _bagStream = File.OpenRead("bags/2019-01-19-16-25-02.bag");
+            _bagStream = File.OpenRead(filePath);
         }
 
         public void Dispose()
         {
-            _bagStream.Dispose();
+            _bagStream?.Dispose();
         }
 
-        [Fact]
-        public void Bag_contains_messages()
+        [Theory]
+        [ClassData(typeof(Bagfiles.All))]
+        public void Bag_contains_messages(string bagfile)
         {
+            SetBagFile(bagfile);
             var visitorMock = new Mock<IBagRecordVisitor>();
            
             var reader = BagReaderFactory.Create(_bagStream, visitorMock.Object);
@@ -43,15 +45,19 @@ namespace RobSharper.Ros.BagReader.Tests
             reader.ProcessAll();
         }
 
-        [Fact]
-        public void Can_read_ConnectionId()
+        [Theory]
+        [ClassData(typeof(Bagfiles.All))]
+        public void Can_read_ConnectionId(string bagfile)
         {
+            SetBagFile(bagfile);
             VisitorCallbackTest(messageData => messageData.ConnectionId.Should().BeInRange(int.MinValue, int.MaxValue));
         }
         
-        [Fact]
-        public void All_Timestamps_must_be_after_bagdate()
+        [Theory]
+        [ClassData(typeof(Bagfiles.All))]
+        public void All_Timestamps_must_be_after_bagdate(string bagfile)
         {
+            SetBagFile(bagfile);
             var expectedMinDate = new DateTime(2019,01,19,15,25,0);
 
             VisitorCallbackTest(m =>
@@ -60,9 +66,11 @@ namespace RobSharper.Ros.BagReader.Tests
             });
         }
         
-        [Fact]
-        public void Messages_are_sorted_by_time()
+        [Theory]
+        [ClassData(typeof(Bagfiles.All))]
+        public void Messages_are_sorted_by_time(string bagfile)
         {
+            SetBagFile(bagfile);
             var lastTimestamp = DateTime.MinValue;
 
             VisitorCallbackTest(m =>

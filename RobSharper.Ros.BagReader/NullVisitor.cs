@@ -32,5 +32,10 @@ namespace RobSharper.Ros.BagReader
         {
             
         }
+
+        public void Reset()
+        {
+            
+        }
     }
 }

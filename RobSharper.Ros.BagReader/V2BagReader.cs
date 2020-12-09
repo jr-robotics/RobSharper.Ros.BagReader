@@ -46,6 +46,7 @@ namespace RobSharper.Ros.BagReader
                 throw new NotSupportedException("Cannot reset underlying stream");
 
             _stream.Seek(_bagStartPosition, SeekOrigin.Begin);
+            _visitor.Reset();
         }
 
         public bool HasNext()

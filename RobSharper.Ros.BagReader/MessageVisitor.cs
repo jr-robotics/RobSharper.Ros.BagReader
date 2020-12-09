@@ -43,5 +43,10 @@ namespace RobSharper.Ros.BagReader
         public virtual void Visit(ChunkInfo record)
         {
         }
+
+        public virtual void Reset()
+        {
+            _connections.Clear();
+        }
     }
 }

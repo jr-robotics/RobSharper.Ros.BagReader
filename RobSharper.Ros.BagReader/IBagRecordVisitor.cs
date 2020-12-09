@@ -10,5 +10,6 @@ namespace RobSharper.Ros.BagReader
         void Visit(MessageData record);
         void Visit(IndexData record);
         void Visit(ChunkInfo record);
+        void Reset();
     }
 }

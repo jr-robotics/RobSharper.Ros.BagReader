@@ -22,6 +22,8 @@ namespace RobSharper.Ros.BagReader
 
         public override void Visit(MessageData record)
         {
+            record.ReadData();
+            
             var connection = _connections[record.ConnectionId];
             Visit(record, connection);
         }

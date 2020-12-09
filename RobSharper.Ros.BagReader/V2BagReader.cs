@@ -16,7 +16,7 @@ namespace RobSharper.Ros.BagReader
         public V2BagReader(Stream bag, IBagRecordVisitor visitor, bool skipVersionHeader = false)
         {
             if (bag == null) throw new ArgumentNullException(nameof(bag));
-            _visitor = visitor ?? NullVisitor.Instance;
+            _visitor = visitor ?? RecordVisitor.NullVisitor;
             
             if (!skipVersionHeader)
             {

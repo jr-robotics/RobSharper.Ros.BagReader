@@ -3,32 +3,24 @@ using RobSharper.Ros.BagReader.Records;
 
 namespace RobSharper.Ros.BagReader
 {
-    public abstract class MessageVisitorBase : IBagRecordVisitor
+    public abstract class MessageVisitor : RecordVisitor
     {
         private readonly Dictionary<int, Connection> _connections;
 
-        public MessageVisitorBase()
+        public MessageVisitor()
         {
             _connections = new Dictionary<int, Connection>();
         }
 
         public IEnumerable<Connection> Connections => _connections.Values;
 
-        public virtual void Visit(BagHeader record)
-        {
-        }
-
-        public virtual void Visit(Chunk record)
-        {
-        }
-
-        public virtual void Visit(Connection record)
+        public override void Visit(Connection record)
         {
             record.ReadData();
             _connections[record.ConnectionId] = record;
         }
 
-        public virtual void Visit(MessageData record)
+        public override void Visit(MessageData record)
         {
             var connection = _connections[record.ConnectionId];
             Visit(record, connection);
@@ -36,15 +28,7 @@ namespace RobSharper.Ros.BagReader
 
         public abstract void Visit(MessageData message, Connection connection);
 
-        public virtual void Visit(IndexData record)
-        {
-        }
-
-        public virtual void Visit(ChunkInfo record)
-        {
-        }
-
-        public virtual void Reset()
+        public override void Reset()
         {
             _connections.Clear();
         }

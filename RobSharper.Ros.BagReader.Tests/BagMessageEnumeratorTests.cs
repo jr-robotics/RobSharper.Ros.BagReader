@@ -1,10 +1,12 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using FluentAssertions;
+using RobSharper.Ros.BagReader.Enumerators;
 using Xunit;
 
 namespace RobSharper.Ros.BagReader.Tests
 {
-    public class BagMessageEnumeratorTests
+    public class BagMessageEnumeratorTests : IDisposable
     {
         
         private FileStream _bagStream;

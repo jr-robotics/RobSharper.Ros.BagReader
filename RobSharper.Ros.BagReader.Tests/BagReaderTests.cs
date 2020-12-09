@@ -21,7 +21,7 @@ namespace RobSharper.Ros.BagReader.Tests
         {
             SetBagFile(bagfile);
             
-            var rosbag = BagReaderFactory.Create(_bagStream, new NullVisitor());
+            var rosbag = BagReaderFactory.Create(_bagStream, RecordVisitor.NullVisitor);
         }
 
         [Theory]
@@ -30,7 +30,7 @@ namespace RobSharper.Ros.BagReader.Tests
         {
             SetBagFile(bagfile);
             
-            var rosbag = BagReaderFactory.Create(_bagStream, new NullVisitor());
+            var rosbag = BagReaderFactory.Create(_bagStream, RecordVisitor.NullVisitor);
             rosbag.ProcessAll();
         }
 

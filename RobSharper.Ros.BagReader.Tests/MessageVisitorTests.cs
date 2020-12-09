@@ -29,7 +29,7 @@ namespace RobSharper.Ros.BagReader.Tests
             SetBagFile(bagfile);
             var connectionCount = -1;
             
-            var visitorMock = new Mock<MessageVisitorBase>();
+            var visitorMock = new Mock<MessageVisitor>();
             visitorMock.Setup(x => x.Visit(It.IsAny<Connection>())).CallBase();
             visitorMock.Setup(x => x.Visit(It.IsAny<BagHeader>()))
                 .Callback<BagHeader>(h =>
@@ -50,7 +50,7 @@ namespace RobSharper.Ros.BagReader.Tests
         {
             SetBagFile(bagfile);
             
-            var visitorMock = new Mock<MessageVisitorBase>();
+            var visitorMock = new Mock<MessageVisitor>();
             visitorMock.Setup(x => x.Visit(It.IsAny<Connection>())).CallBase();
             visitorMock.Setup(x => x.Visit(It.IsAny<MessageData>())).CallBase();
             visitorMock.Setup(x => x.Visit(It.IsAny<MessageData>(), It.IsAny<Connection>()))
@@ -71,7 +71,7 @@ namespace RobSharper.Ros.BagReader.Tests
         {
             SetBagFile(bagfile);
             
-            var visitorMock = new Mock<MessageVisitorBase>();
+            var visitorMock = new Mock<MessageVisitor>();
             visitorMock.Setup(x => x.Visit(It.IsAny<Connection>())).CallBase();
             visitorMock.Setup(x => x.Visit(It.IsAny<MessageData>())).CallBase();
             visitorMock.Setup(x => x.Visit(It.IsAny<MessageData>(), It.IsAny<Connection>()))

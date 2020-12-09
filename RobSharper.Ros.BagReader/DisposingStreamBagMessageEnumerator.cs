@@ -16,7 +16,6 @@ namespace RobSharper.Ros.BagReader
             _stream = s;
         }
         
-        
         public bool MoveNext()
         {
             return _inner.MoveNext();

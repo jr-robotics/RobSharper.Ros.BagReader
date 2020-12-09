@@ -31,7 +31,7 @@ namespace RobSharper.Ros.BagReader
             }
         }
         
-        private static BufferBag Create(Stream buffer)
+        public static BufferBag Create(Stream buffer)
         {
             var collector = new CollectorVisitor();
             var bagReader = BagReaderFactory.Create(buffer, collector);

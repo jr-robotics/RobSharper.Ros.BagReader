@@ -56,6 +56,16 @@ namespace RobSharper.Ros.BagReader
             Connections = new ConnectionCollection(path);
         }
 
+        public static FileBag Create(string filePath)
+        {
+            if (filePath == null) throw new ArgumentNullException(nameof(filePath));
+            
+            if (!File.Exists(filePath))
+                throw new FileNotFoundException($"Rosbag file {filePath} not found");
+
+            return new FileBag(filePath);
+        }
+
         private abstract class Collection<T> : IEnumerable<T>
         {
             private readonly string _path;

@@ -10,9 +10,9 @@ namespace RobSharper.Ros.BagReader.Tests
     {
         public static IEnumerable<string> AllTestBags = new List<string>()
         {
-            "bags/2019-01-19-16-25-02.bag",
+            //"bags/2019-01-19-16-25-02.bag",
             "bags/2019-01-19-16-36-59.bag",
-            "bags/2019-01-22-14-19-20.bag"
+            //"bags/2019-01-22-14-19-20.bag"
         };
 
         public class All : IEnumerable<object[]>

@@ -4,6 +4,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RobSharper.Ros.BagReader", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RobSharper.Ros.BagReader.Tests", "RobSharper.Ros.BagReader.Tests\RobSharper.Ros.BagReader.Tests.csproj", "{5DA373D4-DAD1-42A0-98D1-A89E965EFE2C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RobSharper.Ros.BagReader.Examples", "RobSharper.Ros.BagReader.Examples\RobSharper.Ros.BagReader.Examples.csproj", "{5AF45288-6081-48EC-85C0-116F67A50230}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +20,9 @@ Global
 		{5DA373D4-DAD1-42A0-98D1-A89E965EFE2C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5DA373D4-DAD1-42A0-98D1-A89E965EFE2C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5DA373D4-DAD1-42A0-98D1-A89E965EFE2C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5AF45288-6081-48EC-85C0-116F67A50230}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5AF45288-6081-48EC-85C0-116F67A50230}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5AF45288-6081-48EC-85C0-116F67A50230}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5AF45288-6081-48EC-85C0-116F67A50230}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

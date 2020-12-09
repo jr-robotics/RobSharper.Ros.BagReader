@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using FluentAssertions;
 using Moq;
 using RobSharper.Ros.BagReader.Records;

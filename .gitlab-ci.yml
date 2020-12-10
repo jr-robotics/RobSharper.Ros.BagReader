@@ -23,6 +23,7 @@ test:
     - '../dotnet-tools/reportgenerator -reports:coverage/coverage.opencover.xml -targetdir:coverage/report -reporttypes:Html -verbosity:Warning'
   coverage: '/Total\s+\|\s+(\d{0,2}\.\d{1,2}%)/'
   artifacts:
+    when: always
     paths:
       - 'RobSharper.Ros.BagReader.Tests/coverage'
       - 'RobSharper.Ros.BagReader.Tests/TestResults/TestResults.xml'

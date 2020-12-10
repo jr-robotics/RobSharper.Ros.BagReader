@@ -31,4 +31,11 @@ See [RobSharper.Ros.BagReader.Examples Project](RobSharper.Ros.BagReader.Example
 
 ### Read ROS bags
 
-TODO
+There are different `*Bag` classes for processing ROS bag files.
+All implement the [`IBag`](RobSharper.Ros.BagReader/IBag.cs) interface.
+
+For handling small bag files in memory use `BufferBag`. 
+You can load a BufferBag based on a file path, a stream or a `byte[]` buffer.
+
+For handling large bag files use `FileBag` or `StreamBag`.
+You can process bags based on a file path or a stream without loading it into memory.

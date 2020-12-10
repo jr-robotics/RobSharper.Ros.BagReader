@@ -6,11 +6,11 @@ ROS Bag Reader allows you to process ROS bag files.
 
 ## Installation
 
-ROS Bag Reader for .Net is available as [NuGet Package](https://robotics-baget.joanneum.at/packages/RobSharper.Ros.MessageParser/).
+ROS Bag Reader for .Net is available as [NuGet Package](https://robotics-baget.joanneum.at/packages/RobSharper.Ros.BagReader/).
 
 
 ```
-dotnet add package RobSharper.Ros.BagReader
+dotnet add package RobSharper.Ros.BagReader -s https://robotics-baget.joanneum.at/v3/index.json
 ``` 
 
 ### Supported .NET versions

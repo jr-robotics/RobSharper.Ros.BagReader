@@ -1,0 +1,127 @@
+﻿image: mcr.microsoft.com/dotnet/core/sdk:3.1
+
+stages:
+  - build
+  - test
+  - publish
+  - deploy
+
+build Solution:
+  stage: build
+  script:
+    - 'dotnet build'
+  tags:
+    - docker-executor
+
+test:
+  stage: test
+  before_script:
+    - 'dotnet tool install dotnet-reportgenerator-globaltool --tool-path dotnet-tools'
+  script:
+    - 'cd RobSharper.Ros.BagReader.Tests'
+    - "dotnet test --logger \"junit\" /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:CoverletOutput=\"$PWD/coverage/\" /p:Exclude=\"[xunit*]*%2C[RobSharper.Ros.BagReader.Tests]*\" /p:ExcludeByAttribute=\"GeneratedCodeAttribute%2CObsolete%2CCompilerGeneratedAttribute\""
+    - '../dotnet-tools/reportgenerator -reports:coverage/coverage.opencover.xml -targetdir:coverage/report -reporttypes:Html -verbosity:Warning'
+  coverage: '/Total\s+\|\s+(\d{0,2}\.\d{1,2}%)/'
+  artifacts:
+    paths:
+      - 'RobSharper.Ros.BagReader.Tests/coverage'
+      - 'RobSharper.Ros.BagReader.Tests/TestResults/TestResults.xml'
+    reports:
+      junit: 'RobSharper.Ros.BagReader.Tests/TestResults/TestResults.xml'
+  tags:
+    - docker-executor
+
+execute examples:
+  stage: test
+  before_script:
+    - 'dotnet tool install dotnet-reportgenerator-globaltool --tool-path dotnet-tools'
+  script:
+    - 'cd RobSharper.Ros.BagReader.Examples'
+    - "dotnet test --logger \"junit\" /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:CoverletOutput=\"$PWD/coverage/\" /p:Exclude=\"[xunit*]*%2C[RobSharper.Ros.BagReader.Examples]*\" /p:ExcludeByAttribute=\"GeneratedCodeAttribute%2CObsolete%2CCompilerGeneratedAttribute\""
+    - '../dotnet-tools/reportgenerator -reports:coverage/coverage.opencover.xml -targetdir:coverage/report -reporttypes:Html -verbosity:Warning'
+  coverage: '/Total\s+\|\s+(\d{0,2}\.\d{1,2}%)/'
+  artifacts:
+    paths:
+      - 'RobSharper.Ros.BagReader.Examples/coverage'
+      - 'RobSharper.Ros.BagReader.Examples/TestResults/TestResults.xml'
+    reports:
+      junit: 'RobSharper.Ros.BagReader.Examples/TestResults/TestResults.xml'
+  tags:
+    - docker-executor
+
+
+# Create a versioned NuGet package
+# This task is only executed for the branches develop and master as well as version tags
+nuget-pack:
+  stage: publish
+  only:
+    - develop
+    - master
+    - /^v.*$/
+  script:
+    - 'export X_CI_VERSION=$(git describe | cut -c 2-)'
+    - 'echo Publishing version $X_CI_VERSION'
+    - 'cd RobSharper.Ros.BagReader'
+    - 'dotnet pack -c Release -o ../nuget/ -p:Version=$X_CI_VERSION -p:SymbolPackageFormat=snupkg --include-symbols'
+  artifacts:
+    paths:
+      - 'nuget'
+      - 'RobSharper.Ros.BagReader/bin/Release/'
+  tags:
+    - docker-executor
+
+
+# Deploy to JR BaGet server
+# This is done for all pushes of version tags (v*) automatically
+# Pushes to the master branch and web pipeline triggers must be deployed manually
+.baget_base: &baget_base
+  stage: deploy
+  dependencies:
+    - nuget-pack
+  variables:
+    GIT_STRATEGY: none
+  environment:
+    name: JR BaGet
+    url: https://robotics-baget.joanneum.at/
+  script:
+    - 'cd nuget'
+    - 'dotnet nuget push *.nupkg -s $JR_BAGET_URL -k $JR_BAGET_API_KEY'
+  tags:
+    - docker-executor
+
+baget auto:
+  <<: *baget_base
+  only:
+    - /^v.*$/
+  except:
+    - web
+    - schedules
+
+baget manual:
+  <<: *baget_base
+  only:
+    - develop
+    - master
+  when: manual
+
+
+# Deploy to NuGet.org
+# This task has to be triggered manually
+#nuget.org:
+#  stage: deploy
+#  dependencies:
+#    - nuget-pack
+#  variables:
+#    GIT_STRATEGY: none
+#  environment:
+#    name: NuGet.org
+#    url: https://www.nuget.org/
+#  only:
+#    - master
+#    - /^v.*$/
+#  script:
+#    - 'cd nuget'
+#    - 'dotnet nuget push *.nupkg -s https://api.nuget.org/v3/index.json -k $NUGET_ORG_API_KEY'
+#  tags:
+#    - docker-executor
+#  when: manual

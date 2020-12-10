@@ -29,13 +29,17 @@ dotnet add package RobSharper.Ros.BagReader
 
 See [RobSharper.Ros.BagReader.Examples Project](RobSharper.Ros.BagReader.Examples/).
 
-### Read ROS bags
-
 There are different `*Bag` classes for processing ROS bag files.
 All implement the [`IBag`](RobSharper.Ros.BagReader/IBag.cs) interface.
 
-For handling small bag files in memory use `BufferBag`. 
+For handling small bag files in memory use [`BufferBag`](RobSharper.Ros.BagReader/BufferBag.cs). 
 You can load a BufferBag based on a file path, a stream or a `byte[]` buffer.
 
-For handling large bag files use `FileBag` or `StreamBag`.
+For handling large bag files use [`FileBag`](RobSharper.Ros.BagReader/FileBag.cs) or [`StreamBag`](RobSharper.Ros.BagReader/StreamBag.cs).
 You can process bags based on a file path or a stream without loading it into memory.
+
+
+## License
+
+This project is licensed under the BSD 3-clause license. 
+[Learn more](https://choosealicense.com/licenses/bsd-3-clause/)

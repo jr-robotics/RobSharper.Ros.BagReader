@@ -52,7 +52,7 @@ Coverage Report:
   before_script:
     - 'dotnet tool install dotnet-reportgenerator-globaltool --tool-path dotnet-tools'
   script:
-    - 'dotnet-tools/reportgenerator -reports:*/TestResults/*/coverage.cobertura.xml -targetdir:coverage-report -reporttypes:Html'
+    - 'dotnet-tools/reportgenerator -reports:*/TestResults/coverage.cobertura.xml -targetdir:coverage-report -reporttypes:Html'
   artifacts:
     paths:
       - 'coverage-report'

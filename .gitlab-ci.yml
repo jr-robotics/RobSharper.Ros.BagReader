@@ -15,43 +15,49 @@ build Solution:
 
 test:
   stage: test
-  before_script:
-    - 'dotnet tool install dotnet-reportgenerator-globaltool --tool-path dotnet-tools'
   script:
     - 'cd RobSharper.Ros.BagReader.Tests'
-    - 'dotnet build'
-    - 'dotnet test -v normal --no-build --logger junit /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:CoverletOutput="$PWD/coverage/" /p:Exclude="[xunit*]*%2C[RobSharper.Ros.BagReader.Tests]*" /p:ExcludeByAttribute="GeneratedCodeAttribute%2CObsolete%2CCompilerGeneratedAttribute"'
-    - '../dotnet-tools/reportgenerator -reports:coverage/coverage.opencover.xml -targetdir:coverage/report -reporttypes:Html -verbosity:Warning'
+    - 'dotnet test --logger junit /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:CoverletOutput=TestResults/'
   coverage: '/Total\s+\|\s+(\d{0,2}\.\d{1,2}%)/'
   artifacts:
     when: always
     paths:
-      - 'RobSharper.Ros.BagReader.Tests/coverage'
-      - 'RobSharper.Ros.BagReader.Tests/TestResults/TestResults.xml'
+      - 'RobSharper.Ros.BagReader.Tests/TestResults/'
     reports:
       junit: 'RobSharper.Ros.BagReader.Tests/TestResults/TestResults.xml'
+      cobertura: 'RobSharper.Ros.BagReader.Tests/TestResults/coverage.cobertura.xml'
   tags:
     - docker-executor
 
 execute examples:
   stage: test
-  before_script:
-    - 'dotnet tool install dotnet-reportgenerator-globaltool --tool-path dotnet-tools'
   script:
     - 'cd RobSharper.Ros.BagReader.Examples'
-    - 'dotnet build'
-    - 'dotnet test -v normal --no-build --logger junit /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:CoverletOutput="$PWD/coverage/" /p:Exclude="[xunit*]*%2C[RobSharper.Ros.BagReader.Examples]*" /p:ExcludeByAttribute="GeneratedCodeAttribute%2CObsolete%2CCompilerGeneratedAttribute"'
-    - '../dotnet-tools/reportgenerator -reports:coverage/coverage.opencover.xml -targetdir:coverage/report -reporttypes:Html -verbosity:Warning'
+    - 'dotnet test --logger junit /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:CoverletOutput=TestResults/'
   coverage: '/Total\s+\|\s+(\d{0,2}\.\d{1,2}%)/'
   artifacts:
+    when: always
     paths:
-      - 'RobSharper.Ros.BagReader.Examples/coverage'
-      - 'RobSharper.Ros.BagReader.Examples/TestResults/TestResults.xml'
+      - 'RobSharper.Ros.BagReader.Examples/TestResults/'
     reports:
       junit: 'RobSharper.Ros.BagReader.Examples/TestResults/TestResults.xml'
+      cobertura: 'RobSharper.Ros.BagReader.Examples/TestResults/coverage.cobertura.xml'
   tags:
     - docker-executor
 
+
+# Collect coverage xml reports and create a HTML report
+Coverage Report:
+  stage: publish
+  before_script:
+    - 'dotnet tool install dotnet-reportgenerator-globaltool --tool-path dotnet-tools'
+  script:
+    - 'dotnet-tools/reportgenerator -reports:*/TestResults/coverage.cobertura.xml -targetdir:coverage-report -reporttypes:Html'
+  artifacts:
+    paths:
+      - 'coverage-report'
+  tags:
+    - docker-executor
 
 # Create a versioned NuGet package
 # This task is only executed for the branches develop and master as well as version tags
@@ -110,21 +116,21 @@ baget manual:
 
 # Deploy to NuGet.org
 # This task has to be triggered manually
-#nuget.org:
-#  stage: deploy
-#  dependencies:
-#    - nuget-pack
-#  variables:
-#    GIT_STRATEGY: none
-#  environment:
-#    name: NuGet.org
-#    url: https://www.nuget.org/
-#  only:
-#    - master
-#    - /^v.*$/
-#  script:
-#    - 'cd nuget'
-#    - 'dotnet nuget push *.nupkg -s https://api.nuget.org/v3/index.json -k $NUGET_ORG_API_KEY'
-#  tags:
-#    - docker-executor
-#  when: manual
+nuget.org:
+  stage: deploy
+  dependencies:
+    - nuget-pack
+  variables:
+    GIT_STRATEGY: none
+  environment:
+    name: NuGet.org
+    url: https://www.nuget.org/
+  only:
+    - master
+    - /^v.*$/
+  script:
+    - 'cd nuget'
+    - 'dotnet nuget push *.nupkg -s https://api.nuget.org/v3/index.json -k $NUGET_ORG_API_KEY'
+  tags:
+    - docker-executor
+  when: manual

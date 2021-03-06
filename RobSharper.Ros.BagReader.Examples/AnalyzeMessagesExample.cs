@@ -14,7 +14,7 @@ namespace RobSharper.Ros.BagReader.Examples
             // Open rosbag
             var bag = BufferBag.Create(ExampleBag.FilePath);
 
-            // Create a RobSharper.MessageEssentiols Serializer
+            // Create a RobSharper.Ros.MessageEssentials Serializer
             var serializer = CreateSerializer();
 
             // Filter messages
@@ -30,7 +30,6 @@ namespace RobSharper.Ros.BagReader.Examples
                 stringMessage.Should().NotBeNull();
                 stringMessage.Data.Should().NotBeNull();
             }
-
         }
 
         private RosMessageSerializer CreateSerializer()
@@ -44,10 +43,6 @@ namespace RobSharper.Ros.BagReader.Examples
             
             // The TypeRegistry stores all known ROS types and their mappings to CLR types
             var typeRegistry = new MessageTypeRegistry();
-            
-            // Add the String message type. The type is annotated with RosMessageAttribute
-            typeRegistry.GetOrCreateMessageTypeInfo(typeof(StringMessage));
-            // Add more types (if required)
             
             // Create a serializer for the registered types
             var serializer = new RosMessageSerializer(typeRegistry);

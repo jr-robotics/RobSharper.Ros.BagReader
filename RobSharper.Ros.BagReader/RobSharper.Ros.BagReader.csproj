@@ -2,6 +2,15 @@
 
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
+        <Authors>Guido Breitenhuber</Authors>
+        <Copyright>JOANNEUM RESEARCH Forschungsgesellschaft mbH</Copyright>
+        <PackageLicenseExpression>BSD-3-Clause</PackageLicenseExpression>
+        <Description>
+            RobSharper.Ros.BagReader can process ROSBAG files.
+        </Description>
+        <RepositoryType>git</RepositoryType>
+        <RepositoryUrl>https://github.com/jr-robotics/RobSharper.Ros.BagReader.git</RepositoryUrl>
+        <PackageTags>ROS;RobSharper;RobSharper.Ros;ROSBAG;</PackageTags>
     </PropertyGroup>
 
     <ItemGroup>

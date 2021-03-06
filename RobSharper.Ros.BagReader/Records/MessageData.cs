@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using RobSharper.Ros.MessageEssentials;
 using RobSharper.Ros.MessageEssentials.Serialization;
 
 namespace RobSharper.Ros.BagReader.Records

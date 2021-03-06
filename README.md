@@ -6,11 +6,14 @@ ROS Bag Reader allows you to process ROS bag files.
 
 ## Installation
 
-ROS Bag Reader for .Net is available as [NuGet Package](https://robotics-baget.joanneum.at/packages/RobSharper.Ros.BagReader/).
+ROS Message Parser for .Net is available as 
+[NuGet Package](https://www.nuget.org/packages/RobSharper.Ros.BagReader/).
+
+![](https://img.shields.io/nuget/v/RobSharper.Ros.BagReader.svg)
 
 
 ```
-dotnet add package RobSharper.Ros.BagReader -s https://robotics-baget.joanneum.at/v3/index.json
+dotnet add package RobSharper.Ros.BagReader
 ``` 
 
 ### Supported .NET versions
@@ -29,13 +32,42 @@ dotnet add package RobSharper.Ros.BagReader -s https://robotics-baget.joanneum.a
 
 See [RobSharper.Ros.BagReader.Examples Project](RobSharper.Ros.BagReader.Examples/).
 
+### Read messages from ROSBAG
+
+```c#
+public void Read_bag_and_message_data()
+{
+    // Open rosbag
+    var bag = BufferBag.Create(ExampleBag.FilePath);
+
+    // Create a RobSharper.MessageEssentiols Serializer
+    var serializer = new RosMessageSerializer(new MessageTypeRegistry());
+
+    // Filter messages
+    var chatterMessages = bag.Messages
+        .Where(message => message.Connection.DataTopic.Equals("/chatter"));
+
+    // Iterate over filtered messages
+    foreach (var message in chatterMessages)
+    {
+        var messageData = message.Message.Data;
+        var stringMessage = serializer.Deserialize<StringMessage>(messageData);
+
+        Console.WriteLine(stringMessage.Data);
+    }
+}
+```
+
+### Types of Bag readers
+
 There are different `*Bag` classes for processing ROS bag files.
 All implement the [`IBag`](RobSharper.Ros.BagReader/IBag.cs) interface.
 
 For handling small bag files in memory use [`BufferBag`](RobSharper.Ros.BagReader/BufferBag.cs). 
 You can load a BufferBag based on a file path, a stream or a `byte[]` buffer.
 
-For handling large bag files use [`FileBag`](RobSharper.Ros.BagReader/FileBag.cs) or [`StreamBag`](RobSharper.Ros.BagReader/StreamBag.cs).
+For handling large bag files use [`FileBag`](RobSharper.Ros.BagReader/FileBag.cs) or 
+[`StreamBag`](RobSharper.Ros.BagReader/StreamBag.cs).
 You can process bags based on a file path or a stream without loading it into memory.
 
 
